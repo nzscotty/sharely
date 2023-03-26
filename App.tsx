@@ -1,17 +1,9 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React, { useEffect, useState } from 'react';
+/* eslint-disable react/react-in-jsx-scope */
+import { useEffect } from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   AppState,
   AppStateStatus,
-  BackHandler,
-  Linking,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,10 +16,10 @@ import {
 
 import {
   Colors,
-  Header,
 } from 'react-native/Libraries/NewAppScreen';
-import { getIntent, Intent } from 'react-native-get-intent';
-import Clipboard from '@react-native-clipboard/clipboard';
+import { getIntent } from 'react-native-get-intent';
+import { getPostDetails } from './Logic';
+import RNExitApp from 'react-native-exit-app';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -62,24 +54,30 @@ function Section({children, title}: SectionProps): JSX.Element {
 
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
-  const [intent, setIntent] = React.useState<Intent>();
-  const [originalUrl, setOriginalUrl] = React.useState<string>();
-  const [redditDataUrl, setRedditDataUrl] = React.useState<string | null>(null);
-  const [imgUrl, setImgUrl] = React.useState<string | null>();
 
   useEffect(() => {
     const subscription = AppState.addEventListener(
       'change',
       (state: AppStateStatus) => {
-        console.log(`state ${state}`)
+        console.log(`state ${state}`);
         if (state === 'active') {
-          getIntent().then((intent) => {
-            setIntent(intent)
-            if(intent.extras["android.intent.extra.TEXT"]){
-              setOriginalUrl(intent.extras["android.intent.extra.TEXT"] as string)
-              let url = String(intent.extras["android.intent.extra.TEXT"]).split("/?",1)[0]
-              url = url + ".json"
-              setRedditDataUrl(url)
+          getIntent().then(async (intent) => {
+            if (intent.extras['android.intent.extra.TEXT']){
+              let url = String(intent.extras['android.intent.extra.TEXT']).split('/?',1)[0];
+              url = url + '.json';
+
+              if (url.includes('reddit')) {
+                console.log(url);
+
+                await getPostDetails(url);
+
+                setTimeout(() => {
+                  RNExitApp.exitApp();
+               }, 2000);
+
+              } else {
+                ToastAndroid.show('Link is not a reddit link', ToastAndroid.SHORT);
+              }
             }
           });
         }
@@ -88,46 +86,6 @@ function App(): JSX.Element {
     subscription.remove;
   });
 
-  useEffect( () => {
-    if(redditDataUrl != null) {
-      console.log(redditDataUrl)
-      const getUrlAsync = async () => {
-        return fetch(redditDataUrl as string)
-        .then(response => response.json())
-        .then(json => {
-          console.log("YOU MADE IT HERE")
-          console.log(JSON.stringify(json, null, 2))
-          const imgUrl = json[0].data.children[0].data.url_overridden_by_dest as string 
-          if(imgUrl.includes(".jpg") || imgUrl.includes(".png")) {
-            console.log(`imgUrl ${imgUrl}`)
-            setImgUrl(imgUrl)
-            Clipboard.setString(imgUrl.toString());
-            ToastAndroid.show('Image ulr copied to clipboard', ToastAndroid.SHORT);
-            setTimeout(() => {
-              BackHandler.exitApp();
-           }, 2000);
-          }
-          const videoUrl = json[0].data.children[0].data.secure_media['reddit_video'].fallback_url as string 
-          if(videoUrl.includes(".mp4")) {
-            const videoUrlStripped = String(videoUrl).split("?",1)[0]
-            console.log(`videoUrl ${videoUrlStripped}`)
-            setImgUrl(videoUrlStripped)
-            Clipboard.setString(videoUrlStripped.toString());
-            ToastAndroid.show('Video url copied to clipboard', ToastAndroid.SHORT);
-            setTimeout(() => {
-              BackHandler.exitApp();
-           }, 2000);
-          }
-          
-        })
-        .catch(error => {
-          console.error(error);
-        });
-      }
-      getUrlAsync()
-    }
-  }, [redditDataUrl])
-  
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -142,27 +100,16 @@ function App(): JSX.Element {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
-        <Header />
         <View
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
+          <Section title="How to">
+            Share links from reddit to <Text style={styles.highlight}>RShare</Text>, get the media URL copied to the clipboard
           </Section>
-          <Section title="imgUrl">
+          {/* <Section title="imgUrl">
             <Text>imgUrl: {JSON.stringify(imgUrl, null, 2)}</Text>
-          </Section>
-          <Section title="Debug">
-            <Text>Intent: {JSON.stringify(intent, null, 2)}</Text>
-          </Section>
-          <Section title="originalUrl">
-            <Text>originalUrl: {JSON.stringify(originalUrl, null, 2)}</Text>
-          </Section>
-          <Section title="redditDataUrl">
-            <Text>redditDataUrl: {JSON.stringify(redditDataUrl, null, 2)}</Text>
-          </Section>
+          </Section> */}
         </View>
       </ScrollView>
     </SafeAreaView>

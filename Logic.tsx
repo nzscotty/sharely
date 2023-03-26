@@ -9,8 +9,10 @@ export const getPostDetails = async (redditDataUrl: string) => {
     return fetch(redditDataUrl as string)
     .then(response => response.json())
     .then(json => {
+      console.debug(json)
+
       const imgUrl = json[0].data.children[0].data.url_overridden_by_dest as string;
-      if (imgUrl.includes('.jpg') || imgUrl.includes('.png')) {
+      if (imgUrl.includes('.jpg') || imgUrl.includes('.png') || imgUrl.includes('.gif')) {
         console.log(`imgUrl ${imgUrl}`);
         Clipboard.setString(imgUrl.toString());
         ToastAndroid.show('Image URL copied to clipboard', ToastAndroid.SHORT);

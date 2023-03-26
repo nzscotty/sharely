@@ -105,7 +105,8 @@ function App(): JSX.Element {
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
           <Section title="How to">
-            Share links from reddit to <Text style={styles.highlight}>RShare</Text>, get the media URL copied to the clipboard
+            Share links from reddit to <Text style={styles.highlight}>Sharely</Text>, get the media URL copied to the clipboard.
+            Please make sure this app is not running when you share to the app or it will not work
           </Section>
           {/* <Section title="imgUrl">
             <Text>imgUrl: {JSON.stringify(imgUrl, null, 2)}</Text>

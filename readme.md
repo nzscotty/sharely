@@ -3,6 +3,10 @@
 
 This app is intended to be used with Reddit only. it converts the long reddit links to just the image, video or GIF URL 
 
+### TLDR
+
+ - Reddit link BEFORE sharely https://www.reddit.com/r/Cyberpunk/comments/123s6rr/skullboy7_artwork_by_me/?utm_source=share&utm_medium=web2x&context=3
+ - link AFTER sharely https://i.redd.it/9pxvodrhncqa1.jpg
 
 ### How to use
 
